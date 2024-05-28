@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="windt=device-width",
+  initial-scale=5.0>
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Collision Data Visualization</title>
+  <style>
+    #map{
+      height:750px;
+      width:1000px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+
+    }
+  </style>
+</head>
+
+<body>
+  
+  <h1 style="text-align:center;"> Vehicle Collisions of March 2024 </h1>
+  
+  <div id="map"> </div>
+
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDc8t67_v0mNHJg-ISUBvdKg2vihgVIZJU&loading=async&libraries=visualization&callback=initMap">
+  </script>
+  
+  <script>
+    var collision_markers=[];
+    var map;
+    var heatmap;
+    async function fetchData(){
+      var response = await fetch("http://127.0.0.1:5000/fetchdata");
+      var records = await response.json();
+      return records;
+      
+    }
+    async function initMap(){
+          const records = await fetchData();
+          var options = {
+            zoom:10,
+            center:{lat:43.6532,lng:-79.3832}
+          }
+
+          map = new google.maps.Map(document.getElementById('map'), options);
+          heatmap = new google.maps.visualization.HeatmapLayer({
+            data: []
+          });
+            for (let i = 0; i < records.length; i++){
+            var record = records[i];
+            if (parseInt(record[4]) > 0) {
+                var image = "https://upload.wikimedia.org/wikipedia/commons/0/0e/Basic_red_dot.png";
+            }
+            else if (record[5] == "YES") {
+                var image = "https://upload.wikimedia.org/wikipedia/commons/7/7c/GAudit_YellowDot.png";
+            }
+            else {
+              var image = "https://upload.wikimedia.org/wikipedia/commons/2/2d/Basic_green_dot.png";
+            }
+            addCollision({
+              coords:{lat: parseFloat(record[1]), lng: parseFloat(record[0])},
+              icon: {url: image,
+                    scaledSize: new google.maps.Size(15, 15)
+              },
+              info: "<b>Date and Time: </b>"+record[2]+"<br />"+"<b>Neighbourhood: </b>"+record[3]+"<br />"+"<b>Fatalities: </b>"+record[4]+"<br />"+"<b>Injuries: </b>"+record[5]
+            });
+            heatmap.data.push(new google.maps.LatLng(parseFloat(record[1]), parseFloat(record[0])));
+        }
+
+        function addCollision(parameters){
+          var collision = new google.maps.Marker({
+            position:parameters.coords,
+            map:map,
+            icon:parameters.icon,
+            visible: false
+          });
+          if (collision.icon.url == "https://upload.wikimedia.org/wikipedia/commons/2/2d/Basic_green_dot.png"){
+              collision.category = "green";
+          }
+          else if (collision.icon.url == "https://upload.wikimedia.org/wikipedia/commons/7/7c/GAudit_YellowDot.png"){
+              collision.category = "yellow";
+          }
+          else {
+            collision.category = "red";
+          }
+  
+          var infoWindow = new google.maps.InfoWindow({
+            content:parameters.info
+          });
+
+          collision.addListener('click', function(){
+            infoWindow.open(map, collision);
+          });
+          collision_markers.push(collision);
+        }
+    }
+
+    function heatmap_marker_checkbox_output(id){
+            var checkBox = document.getElementById('heatmap');
+            if (checkBox.checked == true){
+              heatmap.setMap(map);
+            }
+            else {
+              heatmap.setMap(null);
+            }
+        }
+
+    function collision_marker_checkbox_output(id){
+            var checkBox = document.getElementById(id);
+            if (checkBox.checked == true){
+              showMarkers(id);
+            }
+            else {
+              hideMarkers(id);
+            }
+        }
+
+    function showMarkers(category){
+          for (let i=0; i < collision_markers.length; i++){
+            if (collision_markers[i].category == category){
+              collision_markers[i].setVisible(true);
+            }
+          }
+        }
+       
+        function hideMarkers(category){
+          for (let i=0; i < collision_markers.length; i++){
+            if (collision_markers[i].category == category){
+              collision_markers[i].setVisible(false);
+            }
+          }
+        }
+  </script>
+  
+  <p style="text-align:center;font-size:80%;clear:both"> click
+    <a target="_blank" href="https://data.torontopolice.on.ca/datasets/bc4c72a793014a55a674984ef175a6f3_0/explore?location=22.500085%2C-67.638909%2C3.15">here</a>
+    to view the original dataset
+  </p>
+
+  <p style="text-align:center;font-size:160%;clear:both"> Click on any of the collision markers to gain information about the collision </p>
+
+  <div style="text-align:left;width:250px">
+    <fieldset>
+      <legend> <b> Meaning of collision markers </b> </legend>
+      <label> <img src="https://upload.wikimedia.org/wikipedia/commons/2/2d/Basic_green_dot.png" height=15 width=15> : No fatalities and no injuries </label>
+      <br />
+      <label> <img src="https://upload.wikimedia.org/wikipedia/commons/7/7c/GAudit_YellowDot.png" height=15 width=15> : Injuries but no fatalities </label>
+      <br />
+      <label> <img src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Basic_red_dot.png" height=15 width=15> : Fatalities </label>
+    </fieldset>
+    <form action="#">
+      <input type="checkbox" id="green" onclick="collision_marker_checkbox_output('green')" /><label>Make visible green markers</label><br />
+      <input type="checkbox" id="yellow" onclick="collision_marker_checkbox_output('yellow')" /><label>Make visible yellow markers</label><br />
+      <input type="checkbox" id="red" onclick="collision_marker_checkbox_output('red')" /><label>Make visible red markers</label><br />
+      <input type="checkbox" id="heatmap" onclick="heatmap_marker_checkbox_output()" /><label>Make visible heatmap</label>
+    </form>
+  </div>
+</body>
+</html>
