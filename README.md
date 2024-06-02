@@ -1,3 +1,4 @@
+<base target="_blank">
 # VehicleCollisionDataVisualization
 
 ## About the Project:
@@ -19,5 +20,3 @@ To launch this web application locally the user must first boot up the App.py se
 
 #### Note: 
 To ensure the API key's usage remains secure the html web app must be launched in correspondence to a url under the form of "*/DataVisualization.html" where * is a wildcard character. Also, to best reduce the incurring costs associated with map load operations having to do with the api key the allowable total number of map loads per day/per minute/per user per minute has been set to a very small allowable number.
-
-<base target="_blank">
