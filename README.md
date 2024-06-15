@@ -12,7 +12,7 @@ The App.py server performs the tasks associated with a REST API through the Flas
 To launch this web application remotely simply click on the link [here](http://54.234.222.178/) and it will direct you to the Nginx reverse proxy that the frontend is operating behind.
 
 #### Note:
-The EC2 instances are launched under the free eligibility tier of AWS. Hence, the instances are fairly weak and so you may need to wait several seconds for the page to fully load under most circumstances.
+The EC2 instances are launched under the free eligibility tier of AWS. Hence, the instances are fairly weak and so you may need to wait several seconds for the page to fully load under most circumstances. Also, to best reduce the incurring costs associated with map load operations having to do with the api key the allowable total number of map loads per day/per minute/per user per minute has been set to a very small allowable number
 
 ### Locally:  
 To launch this web application locally the user must first boot up the App.py server on their system allowing for the HTTP GET requests outgoing from the frontend to be served after the user boots up the html application on their system.
